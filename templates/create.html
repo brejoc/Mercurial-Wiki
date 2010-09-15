@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit page {{ name }}{% endblock %}
+
+{% block body %}
+	<h1>Create a page for {{name}}</h1>
+	
+	<form action="/{{name}}" method="POST">
+		<p><label forid="content">Content</label><br/><textarea id="content" name="content" rows="10" cols="80">{{content}}</textarea></p>
+		
+		<p><input type="submit" value="Save" /></p>
+	</form>
+{% endblock %}
+
