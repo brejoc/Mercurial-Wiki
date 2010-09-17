@@ -1,8 +1,10 @@
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
 
 import os
 import sys
+import codecs
 
 from juno import *
 
@@ -32,24 +34,27 @@ def page_exists(page_name):
 
 @route('/')
 def index_page(web):
-    template('index.html')
+    redirect('/start')
 
 
 @route('/edit/:name')
 def edit_page(web, name):
     content = ""
     if(page_exists(name)):
-        page = open(os.path.join('pages', name), 'r')
-        content = unicode(''.join(page.readlines()))
+        page = codecs.open(os.path.join('pages', name), 'r', 'utf8')
+        content = ''.join(page.readlines())
         page.close()
-    template('create.html', name = name, content = content)
+    template('create.html',
+             name = name,
+             content = content)
 
 
 @get('/*:name')
 def page(web, name):
     if(page_exists(name)):
         page = open(os.path.join('pages', name), 'r')
-        document = Parser(unicode(''.join(page.readlines()), 'utf-8', 'ignore')).parse()
+        document = Parser(
+            unicode(''.join(page.readlines()), 'utf-8', 'ignore')).parse()
         template('page.html',
                  name=name,
                  content=HtmlEmitter(document).emit())

@@ -3,11 +3,12 @@
 {% block title %}{{ name }}{% endblock %}
 
 {% block body %}
-<h1>{{ name }}</h1>
+<h1>[[ {{ name }} ]]</h1>
 
 
 {{content}}
 
-<p><a href="/edit/{{name}}">Edit {{name}}</a></p>
+<hr>
+<p><a href="/edit/{{name}}">edit {{name}}</a></p>
 
 {% endblock %}
