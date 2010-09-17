@@ -1,0 +1,21 @@
+# use glob syntax.
+syntax: glob
+
+.DS_Store
+.svn
+*.svn-base
+.cvs
+settings_local.py
+*.elc
+*.pyc
+*~
+.*.swp
+nbproject
+build/
+*.mode1v3
+*.pbxuser
+*.orig
+
+# switch to regexp syntax.
+syntax: regexp
+^.pc/
