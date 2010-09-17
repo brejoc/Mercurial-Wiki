@@ -5,6 +5,8 @@ from __future__ import with_statement
 import os
 import sys
 import codecs
+import thread
+import webbrowser
 
 from juno import *
 
@@ -70,5 +72,9 @@ def update_page(web, name):
     # TODO: A changed file needs to be commited
     redirect(name)
 
+def start_browser():
+    webbrowser.open('http://localhost:8000')
+
 if __name__ == '__main__':
+    thread.start_new_thread(start_browser, ())
     run()
