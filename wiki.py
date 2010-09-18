@@ -8,6 +8,7 @@ import codecs
 import thread
 import webbrowser
 
+
 from juno import *
 
 from creole import Parser
@@ -17,6 +18,7 @@ from mercurial import commands
 from mercurial import ui
 from mercurial import hg
 from mercurial import verify
+from mercurial import cmdutil
 
 
 init(dict(
@@ -30,8 +32,10 @@ config(dict(
 ))
 
 
+PAGES_FOLDER_NAME = "pages"
+
 def page_exists(page_name):
-    return os.path.exists('pages/' + page_name)
+    return os.path.exists(os.path.join(PAGES_FOLDER_NAME, page_name))
 
 
 @route('/')
@@ -43,7 +47,7 @@ def index_page(web):
 def edit_page(web, name):
     content = ""
     if(page_exists(name)):
-        page = codecs.open(os.path.join('pages', name), 'r', 'utf8')
+        page = codecs.open(os.path.join(PAGES_FOLDER_NAME, name), 'r', 'utf8')
         content = ''.join(page.readlines())
         page.close()
     template('create.html',
@@ -54,7 +58,7 @@ def edit_page(web, name):
 @get('/*:name')
 def page(web, name):
     if(page_exists(name)):
-        page = open(os.path.join('pages', name), 'r')
+        page = open(os.path.join(PAGES_FOLDER_NAME, name), 'r')
         document = Parser(
             unicode(''.join(page.readlines()), 'utf-8', 'ignore')).parse()
         template('page.html',
@@ -66,10 +70,20 @@ def page(web, name):
 
 @post('/:name')
 def update_page(web, name):
-    with(open(os.path.join('pages', name), 'w')) as page_file:
+    with(open(os.path.join(PAGES_FOLDER_NAME, name), 'w')) as page_file:
         page_file.write(web.input('content'))
-    # TODO: If the file is new, it needs to be added
-    # TODO: A changed file needs to be commited
+    repo = hg.repository(ui.ui(), ".")
+    file_list = [os.path.join(PAGES_FOLDER_NAME, name)]
+    try:
+        # Mercurial <= 1.5
+        repo.add(file_list)
+    except:
+        # Mercurial >= 1.6
+        repo[None].add(file_list)
+    match = cmdutil.matchfiles(repo, file_list or [])
+    repo.commit(match=match,
+                text="HGWiki: Changed wiki page %s" % (name, ),
+                user="hgwiki")
     redirect(name)
 
 def start_browser():
