@@ -25,17 +25,22 @@ init(dict(
     use_database=False,
 ))
 
+file_path = os.path.dirname(os.path.realpath(__file__))
+
 config(dict(
     use_static=True,
     static_url='/static/*:file/',
-    static_root='./static/',
+    static_root=os.path.join(file_path, 'static/'),
+    template_root=os.path.join(file_path, 'templates/',
 ))
 
 
-PAGES_FOLDER_NAME = "pages"
+REPO_DIR = os.getcwdu()
+PAGES_DIR = ".hgwiki"
+
 
 def page_exists(page_name):
-    return os.path.exists(os.path.join(PAGES_FOLDER_NAME, page_name))
+    return os.path.exists(os.path.join(PAGES_DIR, page_name))
 
 
 @route('/')
@@ -47,7 +52,7 @@ def index_page(web):
 def edit_page(web, name):
     content = ""
     if(page_exists(name)):
-        page = codecs.open(os.path.join(PAGES_FOLDER_NAME, name), 'r', 'utf8')
+        page = codecs.open(os.path.join(PAGES_DIR, name), 'r', 'utf8')
         content = ''.join(page.readlines())
         page.close()
     template('create.html',
@@ -58,7 +63,7 @@ def edit_page(web, name):
 @get('/*:name')
 def page(web, name):
     if(page_exists(name)):
-        page = open(os.path.join(PAGES_FOLDER_NAME, name), 'r')
+        page = open(os.path.join(PAGES_DIR, name), 'r')
         document = Parser(
             unicode(''.join(page.readlines()), 'utf-8', 'ignore')).parse()
         template('page.html',
@@ -70,10 +75,13 @@ def page(web, name):
 
 @post('/:name')
 def update_page(web, name):
-    with(open(os.path.join(PAGES_FOLDER_NAME, name), 'w')) as page_file:
+    abs_path_to_pages = os.path.join(REPO_DIR, PAGES_DIR)
+    if not os.path.isdir(abs_path_to_pages):
+        os.mkdir(abs_path_to_pages)
+    with(open(os.path.join(PAGES_DIR, name), 'w')) as page_file:
         page_file.write(web.input('content'))
-    repo = hg.repository(ui.ui(), ".")
-    file_list = [os.path.join(PAGES_FOLDER_NAME, name)]
+    repo = hg.repository(ui.ui(), REPO_DIR)
+    file_list = [os.path.join(PAGES_DIR, name)]
     try:
         # Mercurial <= 1.5
         repo.add(file_list)
