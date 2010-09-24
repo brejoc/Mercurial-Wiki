@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+
 # hgwiki, Copyright (c) 2010, Jochen Breuer <brejoc@gmail.com>
 #
 # This file is part of hgwiki.
@@ -38,6 +39,10 @@ from mercurial import verify
 from mercurial import cmdutil
 
 
+REPO_DIR = os.getcwdu()
+PAGES_DIR = ".hgwiki"
+WIKI_PORT = 8001
+
 init(dict(
     use_database=False,
 ))
@@ -45,15 +50,14 @@ init(dict(
 file_path = os.path.dirname(os.path.realpath(__file__))
 
 config(dict(
+    mode='dev',
+    dev_port=WIKI_PORT,
     use_static=True,
     static_url='/static/*:file/',
     static_root=os.path.join(file_path, 'static/'),
     template_root=os.path.join(file_path, 'templates/')
 ))
 
-
-REPO_DIR = os.getcwdu()
-PAGES_DIR = ".hgwiki"
 
 
 def page_exists(page_name):
@@ -112,7 +116,7 @@ def update_page(web, name):
     redirect(name)
 
 def start_browser():
-    webbrowser.open('http://localhost:8000')
+    webbrowser.open('http://localhost:%s' % (WIKI_PORT, ))
 
 if __name__ == '__main__':
     thread.start_new_thread(start_browser, ())
