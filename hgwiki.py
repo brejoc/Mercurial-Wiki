@@ -21,103 +21,101 @@
 from __future__ import with_statement
 
 import os
-import sys
 import codecs
 import thread
-import webbrowser
 
-
-from juno import *
+from bottle import TEMPLATE_PATH
+from bottle import route, run, redirect, request, debug, static_file
+from bottle import jinja2_template as template
 
 from creole import Parser
 from creole.html_emitter import HtmlEmitter 
 
-from mercurial import commands
-from mercurial import ui
-from mercurial import hg
-from mercurial import verify
-from mercurial import cmdutil
+from util import start_browser
+from util import page_exists
+from util import write_to_file
+from util import commit_to_repo
 
+debug(False)
+file_path = os.path.dirname(os.path.realpath(__file__))
 
 REPO_DIR = os.getcwdu()
 PAGES_DIR = ".hgwiki"
 WIKI_PORT = 8001
-
-init(dict(
-    use_database=False,
-))
-
-file_path = os.path.dirname(os.path.realpath(__file__))
-
-config(dict(
-    mode='dev',
-    dev_port=WIKI_PORT,
-    use_static=True,
-    static_url='/static/*:file/',
-    static_root=os.path.join(file_path, 'static/'),
-    template_root=os.path.join(file_path, 'templates/')
-))
+TEMPLATE_PATH.append(os.path.join(file_path, 'views/'))
 
 
 
-def page_exists(page_name):
-    return os.path.exists(os.path.join(PAGES_DIR, page_name))
+# Bottle routes
 
+@route('/static/:filename')
+def server_static(filename):
+    return static_file(filename, root=os.path.join(file_path, 'static/'))
+
+@route('/favicon.ico')
+def favicon():
+    return ""
 
 @route('/')
-def index_page(web):
+def index_page():
     redirect('/start')
 
 
 @route('/edit/:name')
-def edit_page(web, name):
+def edit_page(name):
     content = ""
-    if(page_exists(name)):
+    action = "Create"
+    if(page_exists(PAGES_DIR, name)):
         page = codecs.open(os.path.join(PAGES_DIR, name), 'r', 'utf8')
         content = ''.join(page.readlines())
         page.close()
-    template('create.html',
+        action = "Edit"
+    return template('edit.html',
              name = name,
-             content = content)
+             content = content,
+             action=action)
 
 
-@get('/*:name')
-def page(web, name):
-    if(page_exists(name)):
+@route('/:name')
+def page(name):
+    if(page_exists(PAGES_DIR, name)):
         page = open(os.path.join(PAGES_DIR, name), 'r')
         document = Parser(
             unicode(''.join(page.readlines()), 'utf-8', 'ignore')).parse()
-        template('page.html',
+        return template('page.html',
+                 name=name,
+                 content=HtmlEmitter(document).emit())
+    elif(name == "start"):
+        start_text = """\
+**A Mercurial Wiki**
+
+This is a wiki built on top of Mercurial. You can use the [[http://www.wikicreole.org/wiki/|creole markup]] to layout your wiki pages. 
+
+Start creating some content!"""
+        write_to_file(REPO_DIR,
+                      PAGES_DIR,
+                      os.path.join(PAGES_DIR, name),
+                      start_text)
+        commit_to_repo(REPO_DIR, [os.path.join(PAGES_DIR, name), ], name)
+        document = Parser(start_text).parse()
+        return template('page.html',
                  name=name,
                  content=HtmlEmitter(document).emit())
     else:
         redirect('/edit/' + name)
 
 
-@post('/:name')
-def update_page(web, name):
-    abs_path_to_pages = os.path.join(REPO_DIR, PAGES_DIR)
-    if not os.path.isdir(abs_path_to_pages):
-        os.mkdir(abs_path_to_pages)
-    with(open(os.path.join(PAGES_DIR, name), 'w')) as page_file:
-        page_file.write(web.input('content'))
-    repo = hg.repository(ui.ui(), REPO_DIR)
+@route('/:name', method='POST')
+def update_page(name):
+    write_to_file(REPO_DIR,
+                  PAGES_DIR,
+                  os.path.join(PAGES_DIR, name),
+                  request.forms.get('content'))
     file_list = [os.path.join(PAGES_DIR, name)]
-    try:
-        # Mercurial <= 1.5
-        repo.add(file_list)
-    except:
-        # Mercurial >= 1.6
-        repo[None].add(file_list)
-    match = cmdutil.matchfiles(repo, file_list or [])
-    repo.commit(match=match,
-                text="HGWiki: Changed wiki page %s" % (name, ),
-                user="hgwiki")
+    commit_to_repo(REPO_DIR, file_list, name)
     redirect(name)
 
-def start_browser():
-    webbrowser.open('http://localhost:%s' % (WIKI_PORT, ))
 
 if __name__ == '__main__':
-    thread.start_new_thread(start_browser, ())
-    run()
+    thread.start_new_thread(start_browser, (WIKI_PORT, ))
+    run(host='localhost', port=WIKI_PORT, reloader=False)

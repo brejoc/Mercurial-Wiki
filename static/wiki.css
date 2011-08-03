@@ -1,4 +1,9 @@
 
 body {
-	font-family: Helevetica, Arial, san-serif;
+	font-family: 'Quattrocento', Verdana, Helvetica, Arial, san-serif;
+	font-size: 10pt;
+}
+
+textarea {
+    font-family: Courier;
 }

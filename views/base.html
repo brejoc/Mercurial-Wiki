@@ -6,6 +6,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		<title>{% block title %}{% endblock %}</title>
 		
+        <link href='http://fonts.googleapis.com/css?family=Quattrocento+Sans' rel='stylesheet' type='text/css'>
 		<link rel="Stylesheet" type="text/css" href="/static/wiki.css"/>
 		
 		<script src="http://www.google.com/jsapi"></script>
@@ -20,7 +21,7 @@
 					
 					if(event.keyCode == 13
 						&& (boxContent.match(/\w+/))) {
-						//alert('Hello: ' + boxContent);
+						alert('Hello: ' + boxContent);
 						document.location.href=boxContent;
 					}
 				});
