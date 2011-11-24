@@ -11,6 +11,9 @@
             <br/>
             <textarea id="content" name="content" rows="10" cols="80">{{content}}</textarea>
         </p>
-        <p><input type="submit" value="Save" /></p>
+        <p>
+          <input type="submit" value="Save" accesskey="S" />
+          <button type="button" value="text" accesskey="C" onClick="javascript:history.back();">Cancel</button>
+        </p>
     </form>
 {% endblock %}
