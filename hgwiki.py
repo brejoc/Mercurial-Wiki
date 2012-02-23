@@ -18,8 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = '1.1'
-
 from __future__ import with_statement
 
 import os
@@ -37,6 +35,8 @@ from util import start_browser
 from util import page_exists
 from util import write_to_file
 from util import commit_to_repo
+
+__version__ = '1.1'
 
 debug(False)
 file_path = os.path.dirname(os.path.realpath(__file__))
