@@ -1,5 +1,6 @@
 import os
 import webbrowser
+import httplib
 
 from time import sleep
 
@@ -7,6 +8,7 @@ from time import sleep
 from mercurial import ui
 from mercurial import hg
 # from mercurial import verify
+
 # Mercurial changed this after 1.8
 try:
     from mercurial.scmutil import matchfiles
@@ -14,13 +16,12 @@ except ImportError:
     from mercurial.cmdutil import matchfiles
 
 
-def start_browser(wiki_port):
+def start_browser(server_port):
     """\
-    Waits a second for the server to come up and opens a browser window.
+    Opens a browser window.
     """
-    sleep(1)
-    webbrowser.open('http://localhost:%s' % (wiki_port, ))
-    
+    webbrowser.open('http://localhost:%s' % (server_port, ))
+
 def page_exists(pages_dir, page_name):
     """\
     Checks if wiki page (file) exists and returns True or False

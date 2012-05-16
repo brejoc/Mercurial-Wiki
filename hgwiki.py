@@ -24,6 +24,9 @@ import os
 import codecs
 import thread
 
+from multiprocessing import Process
+from time import sleep
+
 from bottle import TEMPLATE_PATH
 from bottle import route, run, redirect, request, debug, static_file
 from bottle import jinja2_template as template
@@ -43,7 +46,8 @@ file_path = os.path.dirname(os.path.realpath(__file__))
 
 REPO_DIR = os.getcwdu()
 PAGES_DIR = ".hgwiki"
-WIKI_PORT = 8001
+SERVER_PORT = 8001
+SERVER_ADDRESS = "localhost"
 TEMPLATE_PATH.append(os.path.join(file_path, 'views/'))
 
 
@@ -79,6 +83,7 @@ def edit_page(name):
 
 
 @route('/:name')
+@route('/:name/')
 def page(name):
     if(page_exists(PAGES_DIR, name)):
         page = open(os.path.join(PAGES_DIR, name), 'r')
@@ -118,6 +123,24 @@ def update_page(name):
     redirect(name)
 
 
+@route('/admin/ping', method='GET')
+def ping():
+    return "pong"
+
+
 if __name__ == '__main__':
-    thread.start_new_thread(start_browser, (WIKI_PORT, ))
-    run(host='localhost', port=WIKI_PORT, reloader=False)
+    bottle_process = None
+    while bottle_process == None or bottle_process.is_alive() == False:
+        bottle_process = \
+                Process(target=run, args=(), \
+                kwargs={ 'host': 'localhost', 'port': SERVER_PORT, 'reloader': False })
+        bottle_process.start()
+        SERVER_PORT+=1
+        # giving the server time to start up
+        sleep(1)
+    
+    # Removing last increment from loop
+    SERVER_PORT-=1
+    print("*"*34)
+    print("\nListening on http://localhost:%s\n" % (SERVER_PORT, ))
+    thread.start_new_thread(start_browser, (SERVER_PORT, ))
