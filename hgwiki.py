@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # hgwiki, Copyright (c) 2010, Jochen Breuer <brejoc@gmail.com>
