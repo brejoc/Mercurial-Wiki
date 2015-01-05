@@ -31,8 +31,7 @@ from bottle import TEMPLATE_PATH
 from bottle import route, run, redirect, request, debug, static_file
 from bottle import jinja2_template as template
 
-from creole import Parser
-from creole.html_emitter import HtmlEmitter 
+import markdown2
 
 from util import start_browser
 from util import page_exists
@@ -87,16 +86,16 @@ def edit_page(name):
 def page(name):
     if(page_exists(PAGES_DIR, name)):
         page = open(os.path.join(PAGES_DIR, name), 'r')
-        document = Parser(
-            unicode(''.join(page.readlines()), 'utf-8', 'ignore')).parse()
+        document = markdown2.markdown(
+            unicode(''.join(page.readlines()), 'utf-8', 'ignore'))
         return template('page.html',
                  name=name,
-                 content=HtmlEmitter(document).emit())
+                 content=document)
     elif(name == "start"):
         start_text = """\
-**A Mercurial Wiki**
+##A Mercurial Wiki##
 
-This is a wiki built on top of Mercurial. You can use the [[http://www.wikicreole.org/wiki/|creole markup]] to layout your wiki pages. 
+This is a wiki built on top of Mercurial. You can use the [markdown markup](https://github.com/trentm/python-markdown2) to layout your wiki pages. 
 
 Start creating some content!"""
         write_to_file(REPO_DIR,
@@ -104,10 +103,10 @@ Start creating some content!"""
                       os.path.join(PAGES_DIR, name),
                       start_text)
         commit_to_repo(REPO_DIR, [os.path.join(PAGES_DIR, name), ], name)
-        document = Parser(start_text).parse()
+        document = markdown2.markdown(start_text)
         return template('page.html',
                  name=name,
-                 content=HtmlEmitter(document).emit())
+                 content=document)
     else:
         redirect('/edit/' + name)
 
