@@ -33,15 +33,17 @@ from bottle import jinja2_template as template
 
 import markdown2
 
-from util import start_browser
-from util import page_exists
-from util import write_to_file
-from util import commit_to_repo
+from mercurial_wiki import util
+
+#from mercurial_wiki.util import start_browser
+#from mercurial_wiki.util import page_exists
+#from mercurial_wiki.util import write_to_file
+#from mercurial_wiki.util import commit_to_repo
 
 __version__ = '1.1'
 
 debug(False)
-file_path = os.path.dirname(os.path.realpath(__file__))
+file_path = os.path.dirname(os.path.realpath(util.__file__))
 
 REPO_DIR = os.getcwdu()
 PAGES_DIR = ".hgwiki"
@@ -70,7 +72,7 @@ def index_page():
 def edit_page(name):
     content = ""
     action = "Create"
-    if(page_exists(PAGES_DIR, name)):
+    if(util.page_exists(PAGES_DIR, name)):
         page = codecs.open(os.path.join(PAGES_DIR, name), 'r', 'utf8')
         content = ''.join(page.readlines())
         page.close()
@@ -84,7 +86,7 @@ def edit_page(name):
 @route('/:name')
 @route('/:name/')
 def page(name):
-    if(page_exists(PAGES_DIR, name)):
+    if(util.page_exists(PAGES_DIR, name)):
         page = open(os.path.join(PAGES_DIR, name), 'r')
         document = markdown2.markdown(
             unicode(''.join(page.readlines()), 'utf-8', 'ignore'))
@@ -98,11 +100,11 @@ def page(name):
 This is a wiki built on top of Mercurial. You can use the [markdown markup](https://github.com/trentm/python-markdown2) to layout your wiki pages. 
 
 Start creating some content!"""
-        write_to_file(REPO_DIR,
+        util.write_to_file(REPO_DIR,
                       PAGES_DIR,
                       os.path.join(PAGES_DIR, name),
                       start_text)
-        commit_to_repo(REPO_DIR, [os.path.join(PAGES_DIR, name), ], name)
+        util.commit_to_repo(REPO_DIR, [os.path.join(PAGES_DIR, name), ], name)
         document = markdown2.markdown(start_text)
         return template('page.html',
                  name=name,
@@ -113,12 +115,12 @@ Start creating some content!"""
 
 @route('/:name', method='POST')
 def update_page(name):
-    write_to_file(REPO_DIR,
+    util.write_to_file(REPO_DIR,
                   PAGES_DIR,
                   os.path.join(PAGES_DIR, name),
                   request.forms.get('content'))
     file_list = [os.path.join(PAGES_DIR, name)]
-    commit_to_repo(REPO_DIR, file_list, name)
+    util.commit_to_repo(REPO_DIR, file_list, name)
     redirect(name)
 
 
@@ -142,4 +144,4 @@ if __name__ == '__main__':
     SERVER_PORT-=1
     print("*"*34)
     print("\nListening on http://localhost:%s\n" % (SERVER_PORT, ))
-    thread.start_new_thread(start_browser, (SERVER_PORT, ))
+    thread.start_new_thread(util.start_browser, (SERVER_PORT, ))
