@@ -7,7 +7,7 @@ setup(
     package_data={'mercurial_wiki': ['views/*', 'static/*']},
     scripts=['hgwiki.py'],
     url='https://bitbucket.org/brejoc/mercurial-wiki/',
-    license='GPLv2',
+    license='GPLv3+',
     author='Jochen Breuer',
     author_email='brejoc@gmail.com',
     install_requires=[
