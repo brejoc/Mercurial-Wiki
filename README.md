@@ -1,3 +1,7 @@
+# ATTENTION
+
+**This project is abandoned. If someone is interested in maintaining it, please contact me.**
+
 ## Mercurial Wiki
 
 Mercurial Wiki is a wiki with the sole purpose to be embedded into a Mercurial repository. Everyone who clones the repository will automatically get the wiki documentation with all the information needed to get started or the latest changes for the project or branch. 
